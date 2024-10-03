@@ -4,8 +4,23 @@
 //   .then((res) => res.json())
 //   .then((data) => console.log(data));
 
-// load categories
+const getTimeString = (time) => {
+  const year = parseInt(time / 31536000);
+  let remainingTime = time % 31536000;
 
+  const day = parseInt(remainingTime / 86400);
+  remainingTime = remainingTime % 86400;
+
+  const hour = parseInt(remainingTime / 3600);
+  remainingTime = remainingTime % 3600;
+
+  const minute = parseInt(remainingTime / 60);
+  const second = remainingTime % 60;
+
+  return `${year}Y : ${day}D : ${hour}H : ${minute}M : ${second}S`;
+};
+
+// load categories
 const loadCategories = () => {
   fetch("https://openapi.programming-hero.com/api/phero-tube/categories")
     .then((res) => res.json())
@@ -46,9 +61,14 @@ const displayVideos = (videos) => {
     <div class=' mt-5'>
     <div class='relative'>
           <img class='w-96 h-44' src=${video.thumbnail} alt="" />
-          <span class='absolute right-2 bottom-1 bg-black rounded-lg p-1 text-white'>${
-            video.others.posted_date
-          }</span>
+          ${
+            video.others.posted_date?.length == 0
+              ? ""
+              : `<span class='absolute right-2 bottom-1 text-[12px] bg-black rounded-lg p-1 text-white'>${getTimeString(
+                  video.others.posted_date
+                )}</span>`
+          }
+          
         </div>
         <div class='flex mt-2 gap-5'>
           <div>
