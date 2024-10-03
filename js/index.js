@@ -4,6 +4,7 @@
 //   .then((res) => res.json())
 //   .then((data) => console.log(data));
 
+// get time string for video
 const getTimeString = (time) => {
   const year = parseInt(time / 31536000);
   let remainingTime = time % 31536000;
@@ -18,6 +19,13 @@ const getTimeString = (time) => {
   const second = remainingTime % 60;
 
   return `${year}Y : ${day}D : ${hour}H : ${minute}M : ${second}S`;
+};
+
+const loadCategoriesVideos = (id) => {
+  fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
+    .then((res) => res.json())
+    .then((data) => displayVideos(data.category))
+    .catch((err) => console.log(err));
 };
 
 // load categories
@@ -35,7 +43,7 @@ const displayCategories = (categories) => {
     //     create a button
     const div = document.createElement("div");
     div.innerHTML = `
-    <button class='btn bg-red-500 text-white '>${data.category}</button>
+    <button onclick='loadCategoriesVideos(${data.category_id})' class='btn bg-red-500 text-white '>${data.category}</button>
     `;
     callDiv.appendChild(div);
   }
@@ -55,6 +63,7 @@ const loadVideos = () => {
 // display videos
 const displayVideos = (videos) => {
   const displayVideos = document.getElementById("videos");
+  displayVideos.innerHTML = "";
   for (const video of videos) {
     const div = document.createElement("div");
     div.innerHTML = `
