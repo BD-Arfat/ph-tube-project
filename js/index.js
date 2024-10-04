@@ -21,10 +21,22 @@ const getTimeString = (time) => {
   return `${year}Y : ${day}D : ${hour}H : ${minute}M : ${second}S`;
 };
 
+const activeRemoveClass = () => {
+  const button = document.getElementsByClassName("btn-category");
+  for (let bet of button) {
+    bet.classList.remove("active");
+  }
+};
+
 const loadCategoriesVideos = (id) => {
   fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
     .then((res) => res.json())
-    .then((data) => displayVideos(data.category))
+    .then((data) => {
+      activeRemoveClass();
+      const activeBtn = document.getElementById(`btn-${id}`);
+      activeBtn.classList.add("active");
+      displayVideos(data.category);
+    })
     .catch((err) => console.log(err));
 };
 
@@ -43,7 +55,7 @@ const displayCategories = (categories) => {
     //     create a button
     const div = document.createElement("div");
     div.innerHTML = `
-    <button onclick='loadCategoriesVideos(${data.category_id})' class='btn bg-red-500 text-white '>${data.category}</button>
+    <button id='btn-${data.category_id}' onclick='loadCategoriesVideos(${data.category_id})' class='btn btn-category border-none'>${data.category}</button>
     `;
     callDiv.appendChild(div);
   }
@@ -53,17 +65,48 @@ loadCategories();
 // start video card section
 
 // load videos
-const loadVideos = () => {
-  fetch("https://openapi.programming-hero.com/api/phero-tube/videos")
+const loadVideos = (search_text = "") => {
+  fetch(
+    `https://openapi.programming-hero.com/api/phero-tube/videos?title=${search_text}`
+  )
     .then((res) => res.json())
     .then((data) => displayVideos(data.videos))
     .catch((err) => console.log(err));
+};
+
+// load display details video
+const loadDisplayDetailsVideo = async (videoId) => {
+  const url = `https://openapi.programming-hero.com/api/phero-tube/video/${videoId}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  displayDetails(data.video);
+};
+
+const displayDetails = (video) => {
+  const videosContainer = document.getElementById("modalContent");
+  document.getElementById("customModal").showModal();
+  videosContainer.innerHTML = `
+  <img src=${video.thumbnail}/>
+  <p class='mt-3 text-justify text-sm'>${video.description}</p>
+  `;
 };
 
 // display videos
 const displayVideos = (videos) => {
   const displayVideos = document.getElementById("videos");
   displayVideos.innerHTML = "";
+  if (videos.length == 0) {
+    displayVideos.classList.remove("grid");
+    displayVideos.innerHTML = `
+    <div class='min-h-screen flex flex-col gap-5 items-center justify-center'>
+    <img src='img/icon.png'/>
+    </div>
+    `;
+    return;
+  } else {
+    displayVideos.classList.add("grid");
+  }
+
   for (const video of videos) {
     const div = document.createElement("div");
     div.innerHTML = `
@@ -103,11 +146,17 @@ const displayVideos = (videos) => {
             <p class='text-sm pb-3'>${video.others.views}</p>
           </div>
         </div>
+          <button onclick="loadDisplayDetailsVideo('${
+            video.video_id
+          }')" class='btn btn-error btn-sm text-white w-full'>details</button>
     </div>
     `;
     displayVideos.appendChild(div);
   }
 };
+document.getElementById("search-input").addEventListener("keyup", (e) => {
+  loadVideos(e.target.value);
+});
 loadVideos();
 
 // end video card section
